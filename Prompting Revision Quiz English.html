@@ -1,0 +1,517 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Prompting Techniques Quiz</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f0f2f5;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start; /* Align to top initially */
+            min-height: 100vh;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+        .quiz-container {
+            background-color: #ffffff;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+            padding: 30px;
+            max-width: 800px;
+            width: 100%;
+            box-sizing: border-box;
+        }
+        .question-card {
+            background-color: #f9fafb;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+            border: 1px solid #e5e7eb;
+        }
+        .answer-option {
+            background-color: #ffffff;
+            border: 1px solid #d1d5db;
+            border-radius: 8px;
+            padding: 12px 15px;
+            margin-bottom: 10px;
+            cursor: pointer;
+            transition: all 0.2s ease-in-out;
+            display: flex;
+            align-items: center;
+        }
+        .answer-option:hover {
+            border-color: #6366f1;
+            box-shadow: 0 2px 8px rgba(99, 102, 241, 0.1);
+        }
+        .answer-option.selected {
+            background-color: #e0e7ff;
+            border-color: #4f46e5;
+        }
+        .answer-option.correct {
+            background-color: #d1fae5;
+            border-color: #10b981;
+        }
+        .answer-option.incorrect {
+            background-color: #fee2e2;
+            border-color: #ef4444;
+        }
+        .rationale {
+            font-size: 0.9rem;
+            margin-top: 8px;
+            padding: 8px 12px;
+            border-radius: 6px;
+            background-color: #f3f4f6;
+            border: 1px solid #e5e7eb;
+            color: #4b5563;
+        }
+        .rationale.correct-text {
+            background-color: #ecfdf5;
+            border-color: #a7f3d0;
+            color: #065f46;
+        }
+        .rationale.incorrect-text {
+            background-color: #fef2f2;
+            border-color: #fca5a5;
+            color: #991b1b;
+        }
+        .hint {
+            font-style: italic;
+            color: #6b7280;
+            margin-top: 10px;
+            font-size: 0.9rem;
+            padding-left: 10px;
+            border-left: 3px solid #cbd5e1;
+        }
+        .quiz-results {
+            margin-top: 30px;
+            padding: 20px;
+            background-color: #f3f4f6;
+            border-radius: 12px;
+            text-align: center;
+        }
+        .quiz-results h2 {
+            font-size: 1.8rem;
+            font-weight: bold;
+            color: #1f2937;
+            margin-bottom: 15px;
+        }
+        .quiz-results p {
+            font-size: 1.1rem;
+            color: #374151;
+            margin-bottom: 10px;
+        }
+        .restart-button {
+            background-color: #4f46e5;
+            color: white;
+            padding: 12px 25px;
+            border-radius: 8px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background-color 0.2s ease-in-out;
+            margin-top: 20px;
+            display: inline-block;
+        }
+        .restart-button:hover {
+            background-color: #4338ca;
+        }
+    </style>
+</head>
+<body>
+    <div class="quiz-container">
+        <h1 class="text-3xl font-extrabold text-gray-900 mb-6 text-center">Prompting Techniques Quiz</h1>
+        <div id="quiz-questions">
+            <!-- Questions will be rendered here by JavaScript -->
+        </div>
+        <button id="submit-quiz" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-4 rounded-lg shadow-md transition duration-300 ease-in-out mt-6">
+            Submit Quiz
+        </button>
+        <div id="quiz-results" class="hidden">
+            <!-- Results will be displayed here -->
+        </div>
+    </div>
+
+    <script>
+        const quizData = {
+            "questions": [
+                {
+                    "question": "An advisor wants to create a social media post about the benefits of starting a SIP early. Which of the following prompts uses the 'Role Prompting' technique most effectively?",
+                    "hint": "Think about which option gives the AI a specific character or persona to adopt.",
+                    "answerOptions": [
+                        {
+                            "text": "Write a social media post about SIPs.",
+                            "rationale": "This prompt is too broad and lacks the specific persona needed for effective Role Prompting.",
+                            "isCorrect": false
+                        },
+                        {
+                            "text": "You are a financial influencer talking to Gen Z. Write a short, engaging Instagram post explaining why starting a SIP in their 20s is a great idea.",
+                            "rationale": "This option assigns a specific persona (financial influencer) and a target audience (Gen Z), which is the core of the Role Prompting technique.",
+                            "isCorrect": true
+                        },
+                        {
+                            "text": "Here are three successful posts I've written about mutual funds. Write a new one about SIPs.",
+                            "rationale": "This approach is an example of Few-shot Prompting, as it provides examples to guide the AI's style.",
+                            "isCorrect": false
+                        },
+                        {
+                            "text": "What are the key benefits of starting a SIP early? After listing them, write a social media post.",
+                            "rationale": "This prompt is an example of Decomposition, breaking the task into smaller steps.",
+                            "isCorrect": false
+                        }
+                    ]
+                },
+                {
+                    "question": "A user provides the AI with a 600-word technical document and says, 'Rewrite this for a 40-year-old client who is financially aware but not an expert.' Which prompting mistake is the user successfully AVOIDING?",
+                    "hint": "The user gives very specific details about the person who will be reading the final text.",
+                    "answerOptions": [
+                        {
+                            "text": "The prompt is too short.",
+                            "rationale": "The prompt is concise, but it's not ineffectively short because it's paired with a detailed document.",
+                            "isCorrect": false
+                        },
+                        {
+                            "text": "The task given is too broad.",
+                            "rationale": "The task is specific: rewrite a document for a particular audience.",
+                            "isCorrect": false
+                        },
+                        {
+                            "text": "Audience is not mentioned.",
+                            "rationale": "By specifying the audience's age and financial knowledge, the user provides crucial context for the AI to tailor its response.",
+                            "isCorrect": true
+                        },
+                        {
+                            "text": "Not providing formatting guidelines.",
+                            "rationale": "While formatting guidelines could be added, the most significant success here is the clear definition of the target audience.",
+                            "isCorrect": false
+                        }
+                    ]
+                },
+                {
+                    "question": "What is the primary goal of using the 'Chain of Thought' prompting technique?",
+                    "hint": "Think about a detective explaining how they solved a case, not just naming the culprit.",
+                    "answerOptions": [
+                        {
+                            "text": "To get a final numerical answer as quickly as possible.",
+                            "rationale": "This technique prioritizes the reasoning process over just getting a final answer.",
+                            "isCorrect": false
+                        },
+                        {
+                            "text": "To force the AI to explain its reasoning step-by-step, improving the clarity and accuracy of the output.",
+                            "rationale": "The example in the document directly contrasts a simple question with one that asks the AI to explain its process, leading to a more detailed and transparent response.",
+                            "isCorrect": true
+                        },
+                        {
+                            "text": "To provide the AI with several examples of correct answers.",
+                            "rationale": "Providing examples of answers is characteristic of Few-shot Prompting.",
+                            "isCorrect": false
+                        },
+                        {
+                            "text": "To have the AI critique its own answer for potential flaws.",
+                            "rationale": "Asking the AI to review its own output is the core of the Self-Criticism technique.",
+                            "isCorrect": false
+                        }
+                    ]
+                },
+                {
+                    "question": "An advisor wants to prepare for a difficult conversation with a client who is worried about market volatility. Which technique would be most effective for rehearsing this conversation?",
+                    "hint": "Which technique allows you to have a simulated conversation with the AI?",
+                    "answerOptions": [
+                        {
+                            "text": "Decomposition",
+                            "rationale": "While you could break down the conversation into parts, this doesn't help with practicing the interactive flow of the dialogue.",
+                            "isCorrect": false
+                        },
+                        {
+                            "text": "Few-shot Prompting",
+                            "rationale": "Providing examples of past conversations might help with tone, but it won't simulate a live, interactive discussion.",
+                            "isCorrect": false
+                        },
+                        {
+                            "text": "Role Prompting",
+                            "rationale": "By asking the AI to 'Play the role of a cautious HNI client,' the advisor can simulate a realistic back-and-forth conversation and practice handling objections.",
+                            "isCorrect": true
+                        },
+                        {
+                            "text": "Self-Criticism",
+                            "rationale": "This would be useful for refining a script you've already written, but not for practicing a dynamic conversation.",
+                            "isCorrect": false
+                        }
+                    ]
+                },
+                {
+                    "question": "A prompt that says, 'Help me with financial planning,' is an example of which prompting mistake?",
+                    "hint": "The AI is given a very general topic instead of a specific request.",
+                    "answerOptions": [
+                        {
+                            "text": "Not giving enough background.",
+                            "rationale": "While related, the core issue is the lack of a specific, actionable task.",
+                            "isCorrect": false
+                        },
+                        {
+                            "text": "Task given is too broad.",
+                            "rationale": "'Financial planning' is a huge topic; this prompt doesn't give the AI a clear or manageable task to perform.",
+                            "isCorrect": true
+                        },
+                        {
+                            "text": "Too many instructions at a time.",
+                            "rationale": "This prompt suffers from having too few instructions, not too many.",
+                            "isCorrect": false
+                        },
+                        {
+                            "text": "Audience is not mentioned.",
+                            "rationale": "The lack of an audience is a problem, but the fundamental mistake is the overly broad nature of the request itself.",
+                            "isCorrect": false
+                        }
+                    ]
+                },
+                {
+                    "question": "When you ask the AI to first list missing questions from an FAQ and then rewrite it to include them, you are combining Self-Criticism with what other action?",
+                    "hint": "The process described involves two distinct steps: first a review, and then a command.",
+                    "answerOptions": [
+                        {
+                            "text": "A follow-up instruction to refine the output.",
+                            "rationale": "After the AI critiques its work, you give it a command to implement the suggested changes, making the process iterative.",
+                            "isCorrect": true
+                        },
+                        {
+                            "text": "Providing additional information.",
+                            "rationale": "You are not adding new external information, but rather asking the AI to improve based on its own generated critique.",
+                            "isCorrect": false
+                        },
+                        {
+                            "text": "Role Prompting.",
+                            "rationale": "Although the AI acts as a reviewer, the core technique is about improving an existing text, not adopting a persona for a new one.",
+                            "isCorrect": false
+                        },
+                        {
+                            "text": "Few-shot Prompting.",
+                            "rationale": "This process does not involve providing multiple initial examples to guide the AI.",
+                            "isCorrect": false
+                        }
+                    ]
+                },
+                {
+                    "question": "You need to create a detailed client investment summary for Meena. According to the document, which of the following details is crucial to include in the prompt?",
+                    "hint": "The 'Providing Additional Information' technique emphasizes giving the AI all the relevant inputs for a task.",
+                    "answerOptions": [
+                        {
+                            "text": "The number of pages the summary should be.",
+                            "rationale": "While length can be a parameter, the critical information relates to the client's personal and financial situation.",
+                            "isCorrect": false
+                        },
+                        {
+                            "text": "The client's personal details, risk profile, goals, and current holdings.",
+                            "rationale": "The example for 'Providing Additional Information' specifically lists these details as essential for creating a personalized and relevant summary.",
+                            "isCorrect": true
+                        },
+                        {
+                            "text": "Examples of three other investment summaries you have written.",
+                            "rationale": "Providing examples would be Few-shot Prompting, which is different from providing specific background information for a single task.",
+                            "isCorrect": false
+                        },
+                        {
+                            "text": "A request for the AI to act as a portfolio manager.",
+                            "rationale": "Assigning a role is helpful, but the quality of the summary depends most on the specific data provided about the client.",
+                            "isCorrect": false
+                        }
+                    ]
+                },
+                {
+                    "question": "The 'Decomposition' technique is most useful for which of the following situations?",
+                    "hint": "This technique is like building something with blocks, one piece at a time.",
+                    "answerOptions": [
+                        {
+                            "text": "Getting a quick, single-sentence answer.",
+                            "rationale": "This technique is designed for complexity, not speed or simplicity.",
+                            "isCorrect": false
+                        },
+                        {
+                            "text": "Mimicking a specific writing style.",
+                            "rationale": "Mimicking a style is best achieved through Few-shot Prompting.",
+                            "isCorrect": false
+                        },
+                        {
+                            "text": "Tackling a large, multi-faceted task like planning a seminar.",
+                            "rationale": "The document uses planning a seminar as the primary example of a broad task that benefits from being broken down into smaller, more manageable parts.",
+                            "isCorrect": true
+                        },
+                        {
+                            "text": "Checking a document for errors and omissions.",
+                            "rationale": "Reviewing a document for flaws is the purpose of the Self-Criticism technique.",
+                            "isCorrect": false
+                        }
+                    ]
+                },
+                {
+                    "question": "Which of these is NOT listed as a prompting mistake in the document?",
+                    "hint": "Three of these are specifically mentioned in the 'Prompting Mistakes' section. One is described as a good practice elsewhere.",
+                    "answerOptions": [
+                        {
+                            "text": "Not giving enough background.",
+                            "rationale": "The document explicitly lists 'Not giving enough background' as a common prompting mistake.",
+                            "isCorrect": false
+                        },
+                        {
+                            "text": "The prompt is too short.",
+                            "rationale": "'Prompt is too short' is one of the key mistakes highlighted in the document.",
+                            "isCorrect": false
+                        },
+                        {
+                            "text": "Asking the AI to explain its reasoning.",
+                            "rationale": "Asking the AI to explain its reasoning is presented as a good practice under the 'Chain of Thought' technique, not a mistake.",
+                            "isCorrect": true
+                        },
+                        {
+                            "text": "Too many instructions at a time.",
+                            "rationale": "The document clearly identifies giving 'Too many instructions at a time' as a mistake to avoid.",
+                            "isCorrect": false
+                        }
+                    ]
+                },
+                {
+                    "question": "A user pastes two cheerful, informal WhatsApp messages they've sent to clients and asks the AI, 'Write a new message for this month’s SIP reminders.' What is the primary purpose of pasting the old messages?",
+                    "hint": "This is a direct application of the 'Few-shot Prompting' technique.",
+                    "answerOptions": [
+                        {
+                            "text": "To provide the AI with the client's contact information.",
+                            "rationale": "The content of the messages is for style guidance, not for extracting logistical data.",
+                            "isCorrect": false
+                        },
+                        {
+                            "text": "To show the AI the correct length for the message.",
+                            "rationale": "While length is a component of style, the main goal is to establish the overall tone and personality of the message.",
+                            "isCorrect": false
+                        },
+                        {
+                            "text": "To guide the AI on the tone and style for the new message.",
+                            "rationale": "This is the core concept of Few-shot Prompting: providing examples to ensure the output is consistent with a desired style.",
+                            "isCorrect": true
+                        },
+                        {
+                            "text": "To have the AI critique the previous messages.",
+                            "rationale": "The user is asking for a new message to be created based on the examples, not for a review of the old ones.",
+                            "isCorrect": false
+                        }
+                    ]
+                }
+            ]
+        };
+
+        const quizQuestionsContainer = document.getElementById('quiz-questions');
+        const submitQuizButton = document.getElementById('submit-quiz');
+        const quizResultsDiv = document.getElementById('quiz-results');
+        let userAnswers = new Array(quizData.questions.length).fill(null); // Stores index of selected answer for each question
+
+        function renderQuiz() {
+            quizQuestionsContainer.innerHTML = ''; // Clear previous questions
+            quizData.questions.forEach((q, qIndex) => {
+                const questionCard = document.createElement('div');
+                questionCard.className = 'question-card';
+                questionCard.innerHTML = `
+                    <p class="text-lg font-semibold text-gray-800 mb-4">Question ${qIndex + 1}: ${q.question}</p>
+                    <div class="options-container" data-question-index="${qIndex}">
+                        ${q.answerOptions.map((option, oIndex) => `
+                            <div class="answer-option" data-option-index="${oIndex}">
+                                <input type="radio" id="q${qIndex}-option${oIndex}" name="question-${qIndex}" class="hidden">
+                                <label for="q${qIndex}-option${oIndex}" class="flex-grow cursor-pointer">${option.text}</label>
+                            </div>
+                        `).join('')}
+                    </div>
+                    <p class="hint mt-4"><strong>Hint:</strong> ${q.hint}</p>
+                    <div class="rationale-container mt-4 hidden"></div>
+                `;
+                quizQuestionsContainer.appendChild(questionCard);
+            });
+
+            addEventListeners();
+        }
+
+        function addEventListeners() {
+            document.querySelectorAll('.options-container').forEach(container => {
+                container.addEventListener('click', (event) => {
+                    const selectedOption = event.target.closest('.answer-option');
+                    if (!selectedOption) return;
+
+                    const questionIndex = parseInt(container.dataset.questionIndex);
+                    const optionIndex = parseInt(selectedOption.dataset.optionIndex);
+
+                    // Remove 'selected' class from all options in this question
+                    container.querySelectorAll('.answer-option').forEach(opt => {
+                        opt.classList.remove('selected');
+                    });
+
+                    // Add 'selected' class to the clicked option
+                    selectedOption.classList.add('selected');
+                    userAnswers[questionIndex] = optionIndex;
+
+                    // Immediately show rationale
+                    showRationale(questionIndex, optionIndex);
+                });
+            });
+        }
+
+        function showRationale(questionIndex, selectedOptionIndex) {
+            const questionCard = quizQuestionsContainer.children[questionIndex];
+            const rationaleContainer = questionCard.querySelector('.rationale-container');
+            rationaleContainer.innerHTML = ''; // Clear previous rationale
+
+            const selectedOptionData = quizData.questions[questionIndex].answerOptions[selectedOptionIndex];
+
+            const rationaleDiv = document.createElement('div');
+            rationaleDiv.className = `rationale ${selectedOptionData.isCorrect ? 'correct-text' : 'incorrect-text'}`;
+            rationaleDiv.textContent = selectedOptionData.rationale;
+            rationaleContainer.appendChild(rationaleDiv);
+            rationaleContainer.classList.remove('hidden');
+
+            // Visually mark correct/incorrect on the selected option
+            const optionsInQuestion = questionCard.querySelectorAll('.answer-option');
+            optionsInQuestion.forEach((option, index) => {
+                option.classList.remove('correct', 'incorrect');
+                if (index === selectedOptionIndex) {
+                    if (selectedOptionData.isCorrect) {
+                        option.classList.add('correct');
+                    } else {
+                        option.classList.add('incorrect');
+                    }
+                }
+            });
+        }
+
+
+        submitQuizButton.addEventListener('click', () => {
+            let correctCount = 0;
+            quizData.questions.forEach((q, qIndex) => {
+                const userAnswerIndex = userAnswers[qIndex];
+                if (userAnswerIndex !== null) {
+                    const selectedOption = q.answerOptions[userAnswerIndex];
+                    if (selectedOption.isCorrect) {
+                        correctCount++;
+                    }
+                }
+            });
+
+            quizResultsDiv.innerHTML = `
+                <h2 class="text-2xl font-bold text-gray-900 mb-4">Quiz Results</h2>
+                <p class="text-xl text-gray-700 mb-2">You got ${correctCount} out of ${quizData.questions.length} questions correct!</p>
+                <button id="restart-quiz" class="restart-button">Restart Quiz</button>
+            `;
+            quizResultsDiv.classList.remove('hidden');
+            submitQuizButton.classList.add('hidden');
+
+            document.getElementById('restart-quiz').addEventListener('click', () => {
+                userAnswers.fill(null); // Reset answers
+                quizResultsDiv.classList.add('hidden');
+                submitQuizButton.classList.remove('hidden');
+                renderQuiz(); // Re-render the quiz
+            });
+        });
+
+        // Initial render
+        renderQuiz();
+    </script>
+</body>
+</html>
